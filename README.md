@@ -33,9 +33,7 @@ Un MER puede ser expresado como un modelo relacional. En este, una entidad con s
 
 Lenguaje imperativo (explícito) sobre un modelo relacional. Permite expresar consultas sobre estos. Contruído como si el modelo relacional y sus operaciones definieran un álgebra (también llamado álgebra relacional).
 
-> Hacer resumen de las operaciones, con algún ejemplito, para tener una idea del poder de expresividad que tiene.
-
-> Super clave == clave primaria?
+> TODO: Hacer resumen de las operaciones, con algún ejemplito, para tener una idea del poder de expresividad que tiene.
 
 ### CRT: Cálculo relacional de tuplas
 
@@ -70,3 +68,17 @@ Bajo la condición de safe-CRT, tienen el mismo poder expresivo.
 **Y con SQL?**
 La semántica de SQL está basada en safe-CRT, por lo que a priori tiene el mismo poder expresivo que ART y safe-CRT.
 
+## Normalización
+
+Sea una relación **R** conformada por por atributos $A_1, A_2, A_3, ...$. Sea **S** un subconjunto de ellos, entonces se dice que S es una super clave de R si 
+$
+\not\exists t_1, t_2 ( t_1 \neq t_2 \land legal(t_1) \land legal(t_2) \land t_1(S) = t_2(S) )
+$
+
+Es decir, si $t_1$ y $t_2$ son dos tuplas de la relación legales, si sus atributos dentro de $s_i \in S$ cumplen que $t_1(s_i) = t_2(s_i)$ entonces $t_1=t_2$.
+
+> está bien esto de arriba?
+
+> TODO: definir mejor estado de legal, no se entiende
+
+<img src="imgs/diagrama-de-claves.png" width="500">
