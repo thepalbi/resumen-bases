@@ -36,3 +36,37 @@ Lenguaje imperativo (explícito) sobre un modelo relacional. Permite expresar co
 > Hacer resumen de las operaciones, con algún ejemplito, para tener una idea del poder de expresividad que tiene.
 
 > Super clave == clave primaria?
+
+### CRT: Cálculo relacional de tuplas
+
+Lenguaje declarativo que permite expresar cómo es el conjunto de respuestas que buscamos. SQL tiene sus bases fundacionales en este.
+
+Las fórmulas tienen la siguiente estructura básica: 
+$
+{t | COND(t) }
+$
+Dónde $COND$ pueden ser expresiones de lógica de primer orden sobre tuplas de relaciones. $t$ es una tupla que prepresenta las tuplas resultado.
+
+<img src="imgs/crt-ejemplo.png" width="500">
+
+> Las slides tiene un descripción concisa del lenguaje, y después son puro ejercicio.
+
+### Sobre expresividad
+
+La **expresividad** de un lenguaje de consulta equivale al conjunto de conuslta que se le pueden hacer a una base de datos por medio de este lenguaje.
+
+**CRT vs LPO**
+CRT es una especialización de LPO. Una relación puede ser pensada como un predicado que indica si una instancia se encuentra o no en la base de datos.
+
+CRT con expresiones seguras, o safe-CRT: CRT restringido a expresiones donde se garantiza que solo producen una cantidad finita de tuplas como resultado.
+
+<img src="imgs/ejemplo-unsafe-crt.png" width="500">
+
+**AR vs CRT** 
+Bajo la condición de safe-CRT, tienen el mismo poder expresivo.
+
+> LPO no tiene poder expresivo suficiente, por ejemplo si nuestro modelo fuera un grafo de vuelos de una aerolinea, y quisieramos consultar `es posible viajar de x hacia y?`
+
+**Y con SQL?**
+La semántica de SQL está basada en safe-CRT, por lo que a priori tiene el mismo poder expresivo que ART y safe-CRT.
+
