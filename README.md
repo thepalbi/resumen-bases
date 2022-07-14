@@ -79,6 +79,18 @@ Es decir, si $t_1$ y $t_2$ son dos tuplas de la relación legales, si sus atribu
 
 > está bien esto de arriba?
 
-> TODO: definir mejor estado de legal, no se entiende
+**Definiciones pegadas del libro**
+
+<img src="imgs/relation-schema-quote.png" width="500">
+<img src="imgs/relation-state-quotoe.png" width="500">
+
+Básicamente **relation schema**, o esquema de relación denota a la estructura $R(A_1, A_2, ..., A_n)$. Esta es considerada el "esquema" de la relación, el prototipo. Dentro de un esquema $R$, se pueden tener **relation states**, o **estado** a secas.
+Se denotan como $r(R)$.
+Estos son un conjunto ${t_1, t_2, ..., t_m}$ de $m$ tuplas. Cada una de estas representa una instancia del esquema $R$. Es decir, una valuación de cada atributo $A_i$.
+
+> Libro página 151
+
+De aqui suerge el concepto de estado legal (o **legal relation state**). Dado un conjunto $F$ de dependencias funcionales (DFs), se dice que un estaod $r(R)$ es legal si cumple toda las DF $f \in F$. 
+Recordar que **cumplir o validar** una DF es una propiedad semántica, ua que depende del significado de los atributos.
 
 <img src="imgs/diagrama-de-claves.png" width="500">
