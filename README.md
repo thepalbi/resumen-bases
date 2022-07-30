@@ -272,6 +272,23 @@ Los factores a tener en cuenta a la hora de clasificar las DDB son homogeneidad 
 
 La dimensión de heterogeneidad puede surgir de diferencias en los modelos de datos, diferentes versiones de un mismo DBMS, o diferencias de sistema.
 
+Otra clasificación que se puede realizar sobre las DDBs (o mejor decir DBMS que están compuestos por más de un nodo) es teniendo en cuenta la arquitectura (hw y datos). 
+- Parallel dbms
+    - shared memory and disk (shared-everything)
+    - shared disk
+    - shared nothing: En este caso parece que es una ddb, pero como son muchos core cada uno con su memoria principal y storage secundario, que comparten un bus de alta velocidad, no son considerados distribuidos.
+- Distributed dbms
+
+Un modelo arquitectónico para entender una ddb puede ser el siguiente:
+
+<img src="imgs/arquitectura-general-ddb.png" width="500">
+
+- La vista que pueden ver los clientes de la ddb es **GCS**. Este provee la transparencia total necesaria para operar
+- Para manejar la heterogeneidad entre los nodos, cada uno posee un **LIS**, el cual modela los detalles de organización física de los mismos
+- Como también cada nodo puede tener heterogeneidad semántica, cada uno posee un **LCS**.
+
+
+
 > TODO: Repasar del libro la parte de arquitecturas distribuida. En las diapos le falta
 
 **Catalogos**
