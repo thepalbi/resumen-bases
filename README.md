@@ -1,3 +1,34 @@
+## Referencias
+- [Curso de dbs en CMU](https://www.youtube.com/watch?v=oeYBdghaIjc&list=PLSE8ODhjZXjbohkNBWQs_otTrBTrjyohi&ab_channel=CMUDatabaseGroup)
+
+## Notas sobre temas que no pienso darle mucha bola
+
+### Objetos
+
+Existe un dialecto de SQL en el cual se permite modelar:
+1. tipos no atómicos (sets, listas, etc)
+2. tipos complejos, para ser usados dentro de relaciones
+3. herencias
+4. otras cosas del paradigma objetos
+
+> Mapeo objeto relacional. Qué tiene que ver aca?
+
+### XML
+No mucho que decir. Se ve que XML, para que cumple, DTDs y XMLSchema. Después XPATH y alguna otra cosita más. Pero ni ahí creo que entre en el final.
+
+## Resumen clases
+
+1. Transacciones
+    1. Qué es una transacción y propiedades deseables
+1. Schedules - 763
+    1. Definición formal de una transacción e historias
+    1. Seraiabilidad
+    1. Tipo de historias
+1. Control de concurrencia - 781
+    1. Mecanismos de locking como 2pc, multiversion, timestamps, etc.
+1. Logging
+    1. Que se escribe en el log, y cómo funciona el recovery subsystem
+
 ## Introducción
 
 Bases de datos, algunas definiciones:
@@ -70,14 +101,10 @@ La semántica de SQL está basada en safe-CRT, por lo que a priori tiene el mism
 
 ## Normalización
 
-Sea una relación **R** conformada por por atributos $A_1, A_2, A_3, ...$. Sea **S** un subconjunto de ellos, entonces se dice que S es una super clave de R si 
-$
-\not\exists t_1, t_2 ( t_1 \neq t_2 \land legal(t_1) \land legal(t_2) \land t_1(S) = t_2(S) )
-$
+Almacenar un modelo como **natural joins** introduce problemas conocidos como anomalías de actualización, estas pueden ser de inserción, deleción y modificación.
 
-Es decir, si $t_1$ y $t_2$ son dos tuplas de la relación legales, si sus atributos dentro de $s_i \in S$ cumplen que $t_1(s_i) = t_2(s_i)$ entonces $t_1=t_2$.
-
-> está bien esto de arriba?
+Una dependencia funcional es una propiedad semántica del modelo. Estas se escriben $X \rightarrow Y$, y quiere decir que los valores que toman los atributos en $Y$ dependen de los valores que tomen los atributos en $X$.
+Más formalmente, si dentro del conjunto de DFs se encuentra $X \rightarrow Y$, esto implica que para dos tuplas $t_1, t_2$ cualesquiera tal que $t_1[X] = t_2[X]$, se debe cumplir $t_1[Y] = t_2[Y]$.
 
 **Definiciones pegadas del libro**
 
@@ -86,11 +113,94 @@ Es decir, si $t_1$ y $t_2$ son dos tuplas de la relación legales, si sus atribu
 
 Básicamente **relation schema**, o esquema de relación denota a la estructura $R(A_1, A_2, ..., A_n)$. Esta es considerada el "esquema" de la relación, el prototipo. Dentro de un esquema $R$, se pueden tener **relation states**, o **estado** a secas.
 Se denotan como $r(R)$.
-Estos son un conjunto ${t_1, t_2, ..., t_m}$ de $m$ tuplas. Cada una de estas representa una instancia del esquema $R$. Es decir, una valuación de cada atributo $A_i$.
+Estos son un conjunto $\{t_1, t_2, ..., t_m\}$ de $m$ tuplas. Cada una de estas representa una instancia del esquema $R$. Es decir, una valuación de cada atributo $A_i$.
 
 > Libro página 151
 
 De aqui suerge el concepto de estado legal (o **legal relation state**). Dado un conjunto $F$ de dependencias funcionales (DFs), se dice que un estaod $r(R)$ es legal si cumple toda las DF $f \in F$. 
 Recordar que **cumplir o validar** una DF es una propiedad semántica, ua que depende del significado de los atributos.
 
+**Claves**
+
+Sea una relación $R=\{A_1, A_2, ..., A_n\}$. Sea **S** un subconjunto de ellos, entonces se dice que S es una super clave (SK) de R si 
+$
+\not\exists t_1, t_2 ( t_1 \neq t_2 \land legal(t_1) \land legal(t_2) \land t_1(S) = t_2(S) )
+$
+
+Dicho de otra forma, si $t_1$ y $t_2$ son dos tuplas legales de la relación, y sus atributos dentro de $s_i \in S$ cumplen que $t_1(s_i) = t_2(s_i)$ entonces $t_1=t_2$.
+
+Diferentes tipos de claves:
+- Clave (K): Superclave minimal. Si remuevo un atributo deja de ser superclave.
+- Clave candidata (CK): Cada una de las claves de un esquema.
+- Clave primaria (PK): $k \in CK$ designada arbitrariamente como primaria.
+- Clave secundaria: $k \in CK / k \neq PK$
+
 <img src="imgs/diagrama-de-claves.png" width="500">
+
+> Un atributo primo es un atributo $A_i$ de un esquema, que pertence a alguna CK
+
+### Formas normales
+
+Para todas las definiciones de formas normales, asumir en esquema de relación $R=\{A_i\}, i=1,2,...,n$, con una clave primaria $PK$
+
+Recordar que al aplicar el paso de descomposición de cualquier forma normal, debe poder re-armarse el esquema por medio de un **natural join**.
+
+**1FN**
+
+$\forall A_i \in R, Dom (A_i) atomico$
+
+
+> TODO: resumir formas normales
+
+## NoSQL
+
+La definición real de la sigla es _not just SQL_.
+
+**Características generales**
+
+- Schemaless: Fueron diseñadas tomando en cuenta la existencia de datos no/semi estructurados.
+- No relacionales
+- Distribuidas!
+- Escala de forma horizontal
+    - Sharding
+- Interfaces sencillas para acceder a los datos (SQL sería un mencanismo complejo, por la capaidad de expresión)
+- Soportan grandes volúmenes de datos
+
+> TODO: Según las diapos se utiliza a travéz de todas un esquema de tipo clave valor. Es cierto para cada categoría de NoSQL?
+
+Al surgir este tipo de bases de datos, también surge el concepto de propiedades **BASE**, las cuales difieren de **ACID**. Estás son:
+- Basic availability (BA)
+- Soft-State (S)
+- Eventual Consistency (E)
+
+> TODO: Investigar BASE vs. ACID
+
+Las propiedades de BASE y ACID son propiedades que aplican al concepto de interacción de un usuario con la base de datos. En el caso de ACID, la interacción es transaccional, y **generalmente se piensa contra una sola instancia de una DB**. En cambio, como las bases NoSQL suelen ser distribuidas, se piensa BASE como propiedades que ofrece el sistema como un todo.
+
+<img src="imgs/base_vs_acid.png" width="500">
+
+> TODO: Releer ver algún videíto de CAP theorem, y como aplica ahora?
+
+- CAP: A system can at most provide two of these three. Since a distributed system always have to be partition torance, the trade-off is between C and A.
+    - Consistency: A reader gets the most recent value on a READ.
+    - Availability: Every request receives a response.
+    - Partition tolerance: System continues to operate if there's a portion of the system unhealthy.
+
+### Taxonomía
+- NoSQL
+    - Key Value Stores: Cada item almacenado es un par clave valor. El valor puede ser de tipo texto plano, documentos JSON/XML, hasta blobs.
+        - Redis
+    - Document stores: También respetan un esquema clave valor, pero los valores están restringidos a ser documentos de texto con cierta estructura (JSON/XML). Siguen siendo schemaless, pero como poseen metadata sobre los documentos almacenados, permiten realizar indexaciones sobre algunos de los campos.
+        - MongoDB
+    - Column Family DBs: Son bases de datos que consisten una columnas de datos relacionados. Un par clave valor puede ser pensado como una serie de columnas que compartes una clave en particular. Ofrecen naturalmente partición vertical (en vez de particionar los datos por conjuntos de items, se particionan por conjuntos de atributos). Los valores podrían ser vistos como una analogía a las _vistas_ de las bases de datos relacionales.
+        - Google BigTable
+    - Graph databases: Almacena los datos como nodos conectados por medio de relaciones dirigidas y tipadas. Permite realizar consultas de ese tipo.
+        - Neo4j
+
+
+**Pros**
+- Soportan grandes volúmenes de datos.
+- El mecanismo para escalar el sistema es más simple.
+
+**Cons**
+- No hay ninún tipo de integridad referencial a travez de diferentes items.
