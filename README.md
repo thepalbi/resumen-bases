@@ -236,3 +236,47 @@ Otro esquema de control de concurrencia se conoce como **votación** y consisten
 Para asegurar ACID, se utilizan ténicas como [2-phase-commit (2PC)](https://www.youtube.com/watch?v=-_rdWB9hN1c&ab_channel=MartinKleppmann).
 
 <img src="imgs/2pc.png" width="500">
+
+**Fragmentación y replicación**
+
+Fragmentación: Repartir los datos entre diferentes servidores (+ write)
+Replicación: Crear copias de los datos existentes entre diferentes servidores (+ read)
+
+Un esquema común de replicación se conoce como master-slave. Un solo nodo (`master`) de la ddb puede recibir pedidos de lectura / escritura. Las escrituras se replican a los `slave`, los cuales pueden recibir pedidos de lectura. Si el master se cae, se elige uno nuevo (leader election).
+
+La fragmentación consiste en dividir los datos entre múltiples servidores. Esto puede ser realizado de manera horizontal, vertical o mixta. 
+La primera, horizontal, también es conocida como sharding. Esta permite facilmente a un sistema distribuido escalar de forma horizontal. Siempre se trata de que cada shard se encuentre balanceado (misma cantidad de data items en cada uno). En caso que esto no ocurra, se puede **rebalancear** los shards.
+
+<img src="imgs/sharding-1.png" width="500">
+
+**Procesamiento distribuido**
+
+```mermaid
+graph TD
+    A[Mapeo] --> |Se mapea a consulta algebraica tal cual como si fuera un solo nodo| B[Localización]
+    B --> |Se mapea a múltiples queries una en cada fragmento| C[Optmización de query global]
+    C --> D[Optimización de query local]
+    D --> E[Query final]
+```
+
+> TODO: Revisar distributed query processing en libro, y ejemplos de ancho de banda consumido
+
+**Taxonomía**
+
+Los factores a tener en cuenta a la hora de clasificar las DDB son homogeneidad (si todos los server y usuarios utilizan el mismo software), y el nivel de autonomía local.
+
+<img src="imgs/ddb-taxonomy.png" width="500">
+
+- DBs federadas: Hay múltiples nodos los cuales cada uno funciona como una DB en si (con algún grado de autonomía), pero exponen una **vista global** del sistema compuesto por todos estos nodos.
+- Multidatabase system: Cada una de las bases de datos del sistema distribudo es **totalmente autonoma**, y no poseen un esquema global. Este es contruido a medida que es requerido por la aplicación que intereactúa con la ddb.
+
+La dimensión de heterogeneidad puede surgir de diferencias en los modelos de datos, diferentes versiones de un mismo DBMS, o diferencias de sistema.
+
+> TODO: Repasar del libro la parte de arquitecturas distribuida. En las diapos le falta
+
+**Catalogos**
+
+Una ddb debe exponer/mantener un catálogo que contiene metadata acerca de ella. Guarda cosas como distribución de los data item / replicas de los mismos, etc. Puede ser administrado de las siguientes formas:
+- Centralizado
+- Totalmente replicado
+- Parcialmente replicado (fragmentado + cachin en cada nodo de lo que no le pertenezca)
