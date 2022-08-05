@@ -1,5 +1,5 @@
 ## Referencias
-- [Curso de dbs en CMU](https://www.youtube.com/watch?v=oeYBdghaIjc&list=PLSE8ODhjZXjbohkNBWQs_otTrBTrjyohi&ab_channel=CMUDatabaseGroup)
+- [Curso de dbs en CMU](https://15445.courses.cs.cmu.edu/fall2019/schedule.html)
 
 ## Notas sobre temas que no pienso darle mucha bola
 
@@ -203,97 +203,72 @@ Las propiedades de BASE y ACID son propiedades que aplican al concepto de intera
 - El mecanismo para escalar el sistema es más simple.
 
 **Cons**
-- No hay ninún tipo de integridad referencial a travez de diferentes items.
+- No hay ninún tipo de inteo
+gridad referencial a travez de diferentes items.
 
-## Distribuidas
+## Optimización
 
-Una base de datos distribuida (DDB) es una colección de múltiples DBs, lógicamente relacionadas, pero distribuidas a travéz de una red de computadoras.
+### Índices
 
-Además de proveer transparencia entre datos físicos y lógicos, como lo hacen los DBMS normales, debeen proveer transparencia de:
-- Organización de los datos: dónde están ubicados físicamente los datos
-- Fragmentación: Si los datos están repartidos usando fragmentación horizontal (por filas, también conocido como sharding) o vertical (por columnas, más común en una columnar DB).
-- Replicación
-- Diseño del sistema, y como se reliza ejecución de queries de forma distribuida
+Facetas para clasificar un índice: primary o secondary, clustered o unclustered, si usa block anchors o no, denso o esparso.
 
-> Pensar que al ser distribuida la DB las fallas no solo son porque un nodo dejó de funcionar, sino también por perdida de mensajes en la red.
+- Denso e esparso: Si tiene o no una entrada por cada `search key value`, es decir, por cada record.
 
-Visto lo anterior, se puede ver que el sistema debe proveer **transparencia total**.
+**Primary Index**
+Archivo ordenado construido para acceder eficientemente a un data file, el cual se encuentra ordenado por una ordering key. Es decir, el íncide "indexa" sobre el mismo atributo por el cual están ordenados los records en disco. Esta es llamada **primary key**. Cada entrada del índice tiene la forma `<K(i), P(i)>`. `K(i)` es del tipo de la primary key, y `P(i)` es un puntero a un bloque en el disco. Existe una entrada por cada bloque en disco que ocupa el archivo de la relación, y cada `K(i)` corresponde a la PK de la primera entrada del bloque `i` (también llamado **anchor record**, o **block anchor**). Es **esparso**, ya que tiene una entrada por cada bloque, y no por cada record.
 
-Características deseables: Disponibilidad, escalabilidad (horizontal o vertical), tolerancia a pariticiones y autonomía (un nodo debe ser capaz de operar por si solo, aunque sea limitadamente).
+> A pesar que esté ordenado el índice por la misma clave que el data file de la relación, como el índice puede ser contenido en una cantidad mucha mas chica de bloques que el data file entero, realizar una busqueda binaria sobre el mismo es mucho menos costoso que sobre el archivo de relación en si.
 
-La replicación de los datos puede ser parcial o total. Para cada data item vale que $1 \leq |copias| \leq |nodos|$. La elección de dónde replicar cada data item depende de múltiples factores.
+Problema: Inserción y borrado requieren mover elementos entre bloques.
 
-Al haber múltiples copias de cada data item, el problema de control de concurrenecia se complejiza aún más. Variantes:
-- Copia distinguida: Se designa una copia de cada di como la distinguida. Los `lock`/`unlock` son enviados a esta.
-    - Sitio primario: Un único sitio es el distinguido, y este actúa como lock manager, orquestando quien tiene cada lock sobre un data item. También es el encargado de distribuir modificacionas a un di cuando un `write_lock` esta por ser liberado.
-    - Sitio primario + backup: Existe otro sitio que en caso que falle el primario, toma el control. Relentiza más ya que hay que mantener consistencia en el estado de los locks entre primario y backup.
-    - Copia primaria: En vez de ser un único nodo el coordinador de locks, una copia de cada data item es designada como primaria, y el nodo que la posea coordina los locks para dico di.
+**Clustering index**
 
-En todos los esquemas anteriores, ante la falla de uno o múltiples sitios, se puede iniciar un proceso de elección de un nuevo coordinador. Este se realiza por medio de pasaje de mensajes.
+Un clustering index es usado cuando las tuplas de una relación están físicamente ordenadas por una atribuo no clave (llamado **clustering field**, y correspondientemente **clustered file**). En este tipo de índices hay una entrada por cada valor distinto del clustering field. Dicha entrada apunta al primer bloque del data file que tiene ese valor en el clustering field. Es **esparso**.
 
-Otro esquema de control de concurrencia se conoce como **votación** y consisten en el pasaje de mensajes para pedir un lock, al cual cada dueño de una copia debe responder. Si hay mayoría se toma, sino se timeoutea.
+**Secondary Index**
 
-Para asegurar ACID, se utilizan ténicas como [2-phase-commit (2PC)](https://www.youtube.com/watch?v=-_rdWB9hN1c&ab_channel=MartinKleppmann).
+Proveen un patrón de acceso secundario a una relación que ya tenía un primario. El data file subyacente puede estar ordenado o no, o hasheado. Básicamente como todos los otros es un archivo ordenado de tuplas. 
+Este tipo de índices tiene dos categorías:
 
-<img src="imgs/2pc.png" width="500">
+- Es creado sobre una clave candidata. En dicho caso va a haber una entrada del índice por cada tupla de la relación. En el lado izquierdo estará un valor úncio del indexing field, y en el lado derecho o un puntero a la tupla directamente, o un puntero al bloque donde esta tupla debe ser buscada. Notar que acá no se pueden usar block anchors, ya que las tuplas no están __ƒísicamente__ ordenadas por el indexing field.
+- Es creado sobre un atributo no-clave, no-ordering. En este caso pueden haber muchas tuplas con el mismo valor en ese atributo. Para atacar este problema, existen muchas alternativas en cuanto a la implementación:
+    - Incluir entradas duplicadas en el índice, de la forma `(value_1, tuple_n), (value_1, tuple_m), ..., (value_1, tuple_j)`
+    - Cada entrada del índice puede tener un tamaño variable, incluyendo una lista de tuplas con dicho valor en el indexing field
+    - Usar un índice con un nivel de indirección, básicamente como un two-level-paging system. Una entrada del índice con la pinta `(v, p)` le podrían corresponder más de una tupla cuyo atributo indexado tiene valor `v`. Estas son guardadas en una tabla ubicada en el bloque `p`, donde cada entrada es o un puntero a la tupla, o al bloque que la contiene.
 
-**Fragmentación y replicación**
+<img src="imgs/two-way-secondary-index.png" width="500">
 
-Fragmentación: Repartir los datos entre diferentes servidores (+ write)
-Replicación: Crear copias de los datos existentes entre diferentes servidores (+ read)
+> Los secondary index consumen muhca memoria y son más lentos que un primary, pero como en caso que no existieran habría que realizar una linear search, estos proveen una mejora sustancial.
 
-Un esquema común de replicación se conoce como master-slave. Un solo nodo (`master`) de la ddb puede recibir pedidos de lectura / escritura. Las escrituras se replican a los `slave`, los cuales pueden recibir pedidos de lectura. Si el master se cae, se elige uno nuevo (leader election).
+> TODO: Ver algo de BTrees
 
-La fragmentación consiste en dividir los datos entre múltiples servidores. Esto puede ser realizado de manera horizontal, vertical o mixta. 
-La primera, horizontal, también es conocida como sharding. Esta permite facilmente a un sistema distribuido escalar de forma horizontal. Siempre se trata de que cada shard se encuentre balanceado (misma cantidad de data items en cada uno). En caso que esto no ocurra, se puede **rebalancear** los shards.
+**Hash index**
 
-<img src="imgs/sharding-1.png" width="500">
+Se usa una estructura secundaria que usa el hash del atributo indexado como clave de acceso. Una vez obtenido el hash, se accede a un bucket donde se guardan tuplas de la forma `(v1, p1), (v2,p2), ...` donde $H(v_1) = H(v_2) = BucketHash$, y cada entrada guarda el puntero a la tupla o al bloque que la contiene el atributo $v_i$.
 
-**Procesamiento distribuido**
+**Indices en múltiples claves**
 
-```mermaid
-graph TD
-    A[Mapeo] --> |Se mapea a consulta algebraica tal cual como si fuera un solo nodo| B[Localización]
-    B --> |Se mapea a múltiples queries una en cada fragmento| C[Optmización de query global]
-    C --> D[Optimización de query local]
-    D --> E[Query final]
-```
+Si múltiples atributos están involucrados en una única query es posible utilizar alguno de los índices existentes. Por ejemplo en una query sobre dos atributos A y B, se podría utilizar un índice sobre A o B, y ambos y luego tomar la interesección de los resultados en una query WHERE-equals.
 
-> TODO: Revisar distributed query processing en libro, y ejemplos de ancho de banda consumido
+A una clave de un índice que tiene muchos atributos se la llama **composite key**. Se puede contruir índices que trabajan con composite keys, por ejemplo:
+- Alguno de los índices antes visto donde en vez de tomarse como clave un sólo atributo, se usa la la conjunción de ellos, y orden lexicográfico.
+- Partitioned hashing: Una función de hash que podruce n direcciones de hash para n atributos de la composite key, y se concatenan. Esto permite que se puede buscar en este mismo índice con igualdad sobre uno solo de los atributos.
+- Grid files: Se contruye una estructura con forma de tabla n-dimensional, en la cual por aca atributo se usa una escala pre-definida de forma de que las tuplas queden equidstribuidas entre los niveles de la escala.
 
-**Taxonomía**
+<img src="imgs/grid-scale-index.png" width="500">
 
-Los factores a tener en cuenta a la hora de clasificar las DDB son homogeneidad (si todos los server y usuarios utilizan el mismo software), y el nivel de autonomía local.
+> TODO: Agregar detalles u ordenar la información en alguna tabla
 
-<img src="imgs/ddb-taxonomy.png" width="500">
+<img src="imgs/comparacion-indices-1.png" width="500">
 
-- DBs federadas: Hay múltiples nodos los cuales cada uno funciona como una DB en si (con algún grado de autonomía), pero exponen una **vista global** del sistema compuesto por todos estos nodos.
-- Multidatabase system: Cada una de las bases de datos del sistema distribudo es **totalmente autonoma**, y no poseen un esquema global. Este es contruido a medida que es requerido por la aplicación que intereactúa con la ddb.
+### Query execution
 
-La dimensión de heterogeneidad puede surgir de diferencias en los modelos de datos, diferentes versiones de un mismo DBMS, o diferencias de sistema.
+Una query es primero descompuesta en **query blocks** para que no haya queries anidadas. Un query block es un bloque __sin anidaciones__ que tiene un `SELECT-FROM-WHERE (+GROUP BY) (+HAVING) (+AGGREGATE)`. Si tiene una query anidad o se extrae para ser optimizada/ejectuada aparte, o de ser posible, es reemplazada por un antijoin (`WHERE NOT IN`) o semijoin (`WHERE IN`).
 
-Otra clasificación que se puede realizar sobre las DDBs (o mejor decir DBMS que están compuestos por más de un nodo) es teniendo en cuenta la arquitectura (hw y datos). 
-- Parallel dbms
-    - shared memory and disk (shared-everything)
-    - shared disk
-    - shared nothing: En este caso parece que es una ddb, pero como son muchos core cada uno con su memoria principal y storage secundario, que comparten un bus de alta velocidad, no son considerados distribuidos.
-- Distributed dbms
+Luego es traducida de su forma de alto nivel (SQL) a un query tree expresado en un álgebra relacional extendida.
 
-Un modelo arquitectónico para entender una ddb puede ser el siguiente:
+#### SELECT - $\sigma_{A=v}(RELACION)$
 
-<img src="imgs/arquitectura-general-ddb.png" width="500">
+Un select es básicamente una operación para seleccionar las tuplas que cumplen cierta condición.
 
-- La vista que pueden ver los clientes de la ddb es **GCS**. Este provee la transparencia total necesaria para operar
-- Para manejar la heterogeneidad entre los nodos, cada uno posee un **LIS**, el cual modela los detalles de organización física de los mismos
-- Como también cada nodo puede tener heterogeneidad semántica, cada uno posee un **LCS**.
-
-
-
-> TODO: Repasar del libro la parte de arquitecturas distribuida. En las diapos le falta
-
-**Catalogos**
-
-Una ddb debe exponer/mantener un catálogo que contiene metadata acerca de ella. Guarda cosas como distribución de los data item / replicas de los mismos, etc. Puede ser administrado de las siguientes formas:
-- Centralizado
-- Totalmente replicado
-- Parcialmente replicado (fragmentado + cachin en cada nodo de lo que no le pertenezca)
+## [Distribuidas](./distribuidas.md)
