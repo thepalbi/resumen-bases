@@ -1,5 +1,6 @@
 ## Referencias
 - [Curso de dbs en CMU](https://15445.courses.cs.cmu.edu/fall2019/schedule.html)
+- [Temario](./temario.md)
 
 ## Notas sobre temas que no pienso darle mucha bola
 
@@ -103,10 +104,20 @@ La semántica de SQL está basada en safe-CRT, por lo que a priori tiene el mism
 
 Almacenar un modelo como **natural joins** introduce problemas conocidos como anomalías de actualización, estas pueden ser de inserción, deleción y modificación.
 
+**Anomalías**
+
+Supongamos que tenemos `Empleados` y `Departamentos` en los caules trabajan. Si tuviesemos una relación en la cual guardamos `EmpleadoDep(nombreEmpleado, dniEmpleado, fechaNacimientoEmpleado, numDto, nombreDto)` deberámos saber el nombre del Departamento en el que trabaja cada vez que agregamos un empleado, y si el mismo no trabaja en ninguno, dejar esto como `NULL`. Aparte si dos empleados trabajan en el mismo departamento (el 5 por ejemplo) los nombres de estos deberían ser consistentes. Esto se llama **anomalía de inserción**.
+
+En el mismo ejemplo, qué pasa si se borra al único empleado de un departamento? Se pierden los datos del mismo. Esto se llama **anomalía de eliminación**.
+
+Por último, que pasa si queremos actualizar el nombre de un departamento? Deberíamos actualizarlo en todos los empleados que forman parte de este, pudiendo llevar a inconsistencias. Esto se llama **anomalía de modificación**.
+
+**Dependencias funcionales**
+
 Una dependencia funcional es una propiedad semántica del modelo. Estas se escriben $X \rightarrow Y$, y quiere decir que los valores que toman los atributos en $Y$ dependen de los valores que tomen los atributos en $X$.
 Más formalmente, si dentro del conjunto de DFs se encuentra $X \rightarrow Y$, esto implica que para dos tuplas $t_1, t_2$ cualesquiera tal que $t_1[X] = t_2[X]$, se debe cumplir $t_1[Y] = t_2[Y]$.
 
-**Definiciones pegadas del libro**
+Definiciones pegadas del libro:
 
 <img src="imgs/relation-schema-quote.png" width="500">
 <img src="imgs/relation-state-quotoe.png" width="500">
@@ -117,8 +128,15 @@ Estos son un conjunto $\{t_1, t_2, ..., t_m\}$ de $m$ tuplas. Cada una de estas 
 
 > Libro página 151
 
-De aqui suerge el concepto de estado legal (o **legal relation state**). Dado un conjunto $F$ de dependencias funcionales (DFs), se dice que un estaod $r(R)$ es legal si cumple toda las DF $f \in F$. 
-Recordar que **cumplir o validar** una DF es una propiedad semántica, ua que depende del significado de los atributos.
+De aqui suerge el concepto de estado legal (o **legal relation state**). Dado un conjunto $F$ de dependencias funcionales (DFs), se dice que un estado $r(R)$ es legal si cumple toda las DF $f \in F$. 
+Recordar que **cumplir o validar** una DF es una propiedad semántica, una que depende del significado de los atributos.
+
+**Pautas de diseño**
+
+1. Semántica: cuánto más entenedible sea el modelo, mejor. No mezclar dos conceptos diferentes en una misma relación.
+2. Eliminar redundancia: Esto hará que el modelos sea más eficiente en cuanto a almacenamiento, y eliminará las anomalías. Notar que en algunos casos estas pueden ser violadas por razones de performance.
+3. Evitar atributos que pueden ser `NULL`
+4. Evitar tuplas espúreas: Al diseñar un modelo con muchas relaciones que se unen por medio de algún atributo, evitar que se formen tuplas espúreas (inválidas semánticamente).
 
 **Claves**
 
@@ -128,10 +146,11 @@ $
 $
 
 Dicho de otra forma, si $t_1$ y $t_2$ son dos tuplas legales de la relación, y sus atributos dentro de $s_i \in S$ cumplen que $t_1(s_i) = t_2(s_i)$ entonces $t_1=t_2$.
+También se puede leer de forma coloquial como que los atributos que son super clave me identifican (distinguen) unívocamente una tupla.
 
 Diferentes tipos de claves:
 - Clave (K): Superclave minimal. Si remuevo un atributo deja de ser superclave.
-- Clave candidata (CK): Cada una de las claves de un esquema.
+- Clave candidata (CK): Cada una de las claves (K) de un esquema.
 - Clave primaria (PK): $k \in CK$ designada arbitrariamente como primaria.
 - Clave secundaria: $k \in CK / k \neq PK$
 
@@ -141,16 +160,32 @@ Diferentes tipos de claves:
 
 ### Formas normales
 
-Para todas las definiciones de formas normales, asumir en esquema de relación $R=\{A_i\}, i=1,2,...,n$, con una clave primaria $PK$
+Dado un conjunto de dependencias funcionales $DF$, y que cada relación $R$ tiene una clave primaria $PK_R$ existe un proceso para minimizar la redundancia y la posibilidad de anomalías llamado **proceso de normalización** (Codd 1972). La forma normal de un esquema corresponde a la condición más alta de las formas normales que valida, y se dice que esta en $n$ forma normal.
 
-Recordar que al aplicar el paso de descomposición de cualquier forma normal, debe poder re-armarse el esquema por medio de un **natural join**.
+El objetivo de llevarlo a estas formas es  minimizar la redundancia, preservando la informació (de forma que pueda ser reconstruida) y eliminar la posibiidad de anomalías.
 
-**1FN**
+Recordar que al aplicar el paso de descomposición de cualquier forma normal, debe poder re-armarse el esquema por medio de un **natural join**, y se deben seguir garantizando la validez de las DFs.
 
-$\forall A_i \in R, Dom (A_i) atomico$
+<img src="imgs/nf-summary.png" width="500">
 
+Conceptos previos, sea una DF $X \rightarrow Y$:
+- Full funtional dependency: Si remover un atributo $A \in X$ hace que la df no valga más.
+- Partial dependency: Si al remover un atributo $A \in X$ la df sigue valiendo.
 
-> TODO: resumir formas normales
+- **1FN**: También puede ser pensado que el dominio de cada atributo deben ser solo valores atómicos (indivisibles).
+    - En DBMS modernos que soportan atributos de tipo media, por ejemplo `BLOB`, estos son considerados como atómicos.
+- **2FN**: Cada atributo no primo de una relación es fully-dependant de la PK. Es decir, están todos los atributos de la PK en el lado izquierdo de cada DF.
+    - Definición general: Cada atributo no primo de R es fully functional dependant de cada clave K (clave minimal) de R.
+- **3FN**: Esta en 2FN, y ningun atributo no primo dependende transitivamente de la PK.
+    - Definición general: 2FN general + todo atributo no primo depende no transitivamente de cada clave K de R.
+- **BC FN**: Forma mas simplificada de 3fn, pero más restrictiva. Vale si para cada df no trivial $X \rightarrow A$ , X es superclave de R.
+
+> Notar que una de las claúsulas de la definción general admite casos problemáticos: $X \rightarrow A$ df no trivial, con $A$ atributo primo de R. Estos casos que la 3fn deja pasar, Boyce-Codd los atrapa.
+
+> For 2fn: If the primary key contains a single attribute, the test need not be applied at all
+
+Cito el libro en una idea en general a tener en cuenta con respecto a 2nf y 3nf:
+> Intuitively, we can see that any functional dependency in which the left-hand side is part (a proper subset) of the primary key, or any functional dependency in which the left-hand side is a nonkey attribute, is a problematic FD.
 
 ## NoSQL
 
