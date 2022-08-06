@@ -1,0 +1,37 @@
+- Lenguajes
+    - Algebra Relacional
+    - Calculo de Tuplas
+    - Expresividad de Lenguajes 
+    - XML
+- Modelado
+    - Intro y Modelización
+    - DER
+    - Mapeo Objeto Relacional
+    - Normalización
+    - Common Data Models
+- ACID
+    - Transacciones
+    - Schedules
+    - Concurrencia
+    - Logging
+- NoSQL
+    - Qué es?
+    - BASE
+    - Key Value
+    - Column Store
+    - Otras
+- Optimización
+    - Ejecución de queries
+    - Optimización
+- Distribuidas
+    - Qué son?
+    - Fragmentación y Replicación
+- Utils
+    - Gobernanza y Calidad de Datos
+    - Open Data
+    - Seguridad en BD
+    - Datamining
+    - Arquitecturas de datos
+    - Datawarehousing
+    - Big Data
+    - OLAP vs OLTP

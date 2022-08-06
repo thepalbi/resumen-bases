@@ -231,12 +231,17 @@ Proveen un patrón de acceso secundario a una relación que ya tenía un primari
 Este tipo de índices tiene dos categorías:
 
 - Es creado sobre una clave candidata. En dicho caso va a haber una entrada del índice por cada tupla de la relación. En el lado izquierdo estará un valor úncio del indexing field, y en el lado derecho o un puntero a la tupla directamente, o un puntero al bloque donde esta tupla debe ser buscada. Notar que acá no se pueden usar block anchors, ya que las tuplas no están __ƒísicamente__ ordenadas por el indexing field.
+
+> Un puntero a una tupla (record pointer) son usados cuando el índice es denso. Pueden ser implementados como un puntero al block anchor + el offset dentro del bloque.
+
 - Es creado sobre un atributo no-clave, no-ordering. En este caso pueden haber muchas tuplas con el mismo valor en ese atributo. Para atacar este problema, existen muchas alternativas en cuanto a la implementación:
     - Incluir entradas duplicadas en el índice, de la forma `(value_1, tuple_n), (value_1, tuple_m), ..., (value_1, tuple_j)`
     - Cada entrada del índice puede tener un tamaño variable, incluyendo una lista de tuplas con dicho valor en el indexing field
     - Usar un índice con un nivel de indirección, básicamente como un two-level-paging system. Una entrada del índice con la pinta `(v, p)` le podrían corresponder más de una tupla cuyo atributo indexado tiene valor `v`. Estas son guardadas en una tabla ubicada en el bloque `p`, donde cada entrada es o un puntero a la tupla, o al bloque que la contiene.
 
 <img src="imgs/two-way-secondary-index.png" width="500">
+
+> Se llaman índices secundarios porque la relación sobre la cual se crean ya poseía un patrón de acceso primario (un índice).
 
 > Los secondary index consumen muhca memoria y son más lentos que un primary, pero como en caso que no existieran habría que realizar una linear search, estos proveen una mejora sustancial.
 
@@ -270,5 +275,7 @@ Luego es traducida de su forma de alto nivel (SQL) a un query tree expresado en 
 #### SELECT - $\sigma_{A=v}(RELACION)$
 
 Un select es básicamente una operación para seleccionar las tuplas que cumplen cierta condición.
+
+> TODO: Ver si tiene sentido hacer resumend de las operaciones y sus algos. Quizás en alguna tabla
 
 ## [Distribuidas](./distribuidas.md)
