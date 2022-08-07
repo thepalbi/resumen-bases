@@ -2,9 +2,7 @@
 
 - <span style="color:red">Qué parte del DBMS se encarga de garantizar aislamiento</span>
 
-<mark>TODO: Revisar esto</mark>
-
-En un DBMS, llamamos aislamiento a la propiedad que dos transacciones que son ejecutadas simultaneamnete no interfieran entre si. El componente encargado de esto es el módulo de control de concurrencia (se llamaba así).
+En un DBMS, llamamos aislamiento a la propiedad que dos transacciones que son ejecutadas simultaneamnete no interfieran entre si. El componente encargado de esto es el subsistema de control de concurrencia. Realiza esta tarea controlando el acceso de las transacciones a los múltiples data items que forman una DB.
 
 - <span style="color:green">Modelás una biblioteca con un DER, dar una interrelación 1-n y una n-m</span>
 
@@ -13,6 +11,13 @@ En un DBMS, llamamos aislamiento a la propiedad que dos transacciones que son ej
 - <span style="color:red">Te daba una query en sql y había que escribirla en ar, dar el árbol canónico, dar 2 planes de ejecución y decir creo que una optimización que se pueda hacer si se tienen estadísticas sobre los datos</span>
 - <span style="color:red">Para qué sirve el logging y explicar undo/redo</span>
 - <span style="color:red">Qué es falsa sumarización y qué nivel de aislamiento se necesita en sql para evitarlas</span>
+
+<img src="imgs/falsa-sumarizacion-ejemplo.png" width="500">
+
+Falsa sumarización es un problema que surge cuando una transacción realiza algun tipo de agregación sobre data items (sumarización) y otra afecta alguno/s de ellos, siendo esta modificación no incliuida en la sumarización.
+
+Se necesita el nivel de aislamiento SERIALIZABLE para que no ocurra este tipo de errores.
+
 - <span style="color:red">Que es árbol de decisión y dar un ejemplo</span>
 - <span style="color:red">Que dice el teorema CAP y relacionarlo con ACID</span>
 - <span style="color:red">Por qué en No Sql se necesita la consistencia eventual</span>

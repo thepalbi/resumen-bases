@@ -187,6 +187,88 @@ Conceptos previos, sea una DF $X \rightarrow Y$:
 Cito el libro en una idea en general a tener en cuenta con respecto a 2nf y 3nf:
 > Intuitively, we can see that any functional dependency in which the left-hand side is part (a proper subset) of the primary key, or any functional dependency in which the left-hand side is a nonkey attribute, is a problematic FD.
 
+## Transacciones
+
+- **A**tomicity: Transacción es una unidad atómica de ejecución, es decir debe ser ejectuada en su totalidad, o descartada. El responsable es el susbitema de recovery. El mismo se encarga de commitear un transacción si la misma se ejecutó en su totalidad correctamente; o en caso que hubo una falla medio ejecutar, rollbackearla.
+- **C**onsistency preservation: Si una transacción se ejecuta correctamente, debe llevar la DB de un estado consistente a otro. Responsabilidad del programador, y de los checkeos de integridad del DBMS.
+- **I**solation: Dos transacciones que se ejecutan de manera concurrente no deben interferir entre si. Implementado por el subsistema de control de concurrencia.
+- **D**urability: Los cambios producidos por una transacción commiteada deben persistir en la DB. No pueden ser perdidos por ningún fallo. Implementado por el subsistema de recovery.
+
+```mermaid
+graph TD
+    title[<u>Clasificación de acuerdo a recuperabilidad</u>]
+    title-->A
+    style title fill:#FFF,stroke:#FFF
+    linkStyle 0 stroke:#FFF,stroke-width:0;
+    A[Schedule] --> B[Serial]
+    A --> C[No serial]
+    C --> D[Estricta]
+    C --> E[Evita abort en cascada]
+    C --> F[Recuperable]
+```
+
+<mark>TODO: Agregar algo sobre niveles de aislamiento SQL acá!</mark>
+
+```mermaid
+graph TD
+    title[<u>Clasificación de acuerdo a seriabilidad</u>]
+    title-->A
+    style title fill:#FFF,stroke:#FFF
+    linkStyle 0 stroke:#FFF,stroke-width:0;
+    A[Schedule] --> B[Serial]
+    A --> C[No serial]
+    C --> D[No Serializable]
+    C --> E[Serializable]
+```
+
+> Most concurrency control methods do not actually test for serializability. Rather protocols, or rules, are developed that guarantee that any schedule that follows these rules will be serializable.
+
+> The approach taken in most commercial DBMSs is to design protocols (sets of rules) that—if followed by every individual transaction or if enforced by a DBMS concurrency control subsystem—will ensure serializability of all schedules in which the transactions participate.
+
+<mark>TODO: Agregar resumencito del algo de ver si un schedule es serializable o no</mark>
+
+### Control de concurrencia
+
+- wait-based: Mecanismos de control concurrencia que usan locks. Suele haber un lock por data item (más allá de cómo está implementado el mismo).
+    - Lock Binario
+        - Lock simple sobre cada data item, que se toma cuando se interactúa con estos.
+    - Shared Lock
+        - Read (shared) Write (exclusive) lock
+        - Concepto de upgrade del lock tomado
+    - Two phase locking: Protocolo de cómo usar los locks para garantizar que los schedules pueden ser serializables. Esto es lo que se mencionaba en que no se usa el test del grafo para evaluar si un schedule es serializable.
+- wait-free (es decir que no hace locking):
+    - Control de concurrencia con timestamp
+        - En la versión basic, Cyclic reestart y inanición es un problema con este mecanismo
+        - Strict agrega que los read/write que pasan, esperan a que la última transacción que afecto ese data item commitee o aborte.
+        - Thomas-rule relaja las condiciones sobre write, haciendo que si alguién escribio un data time más adelante, se descarte el write siendo evaluado.
+    - Control de concurrencia con multiversion
+        - Require más espacio en disco ya que se mantienen múltiples versiones de cada DI
+        - La alternativa de timestamp mantiene los read/write timestamp en cada data item, y se admin múltiples (>=1) de cada di (se crea una en cada write)
+        - La alternative de 2pl mantiene solo dos versiones, una "commiteada" y una local
+
+```mermaid
+graph TD
+    A[Control de concurrencia] --> wait[wait-based]
+    A --> waitFree[wait-free]
+
+    wait --> binaryLock[Lock binario]
+    wait --> sharedLock[read-write lock]
+    sharedLock --> 2pl[two-phase locking]
+
+    2pl --> 2plBasic[Basic]
+    2pl --> 2plConservative[Conservative]
+    2pl --> 2plStrict[Strict]
+
+    waitFree --> ts[timestamp-based]
+    ts --> tsBasic[Basic]
+    ts --> tsStrict[Strict]
+    ts --> tsThomas[Thomas-rule]
+
+    waitFree --> multi[multiversion]
+    multi --> multiTs[Timestamp]
+    multi --> multi2PL[two-phase locking]
+```
+
 ## NoSQL
 
 La definición real de la sigla es _not just SQL_.
