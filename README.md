@@ -269,6 +269,19 @@ graph TD
     multi --> multi2PL[two-phase locking]
 ```
 
+## Recovery
+
+```mermaid
+graph TD
+    root[Mecanismos de recovery] --> deferred[Deferred update]
+    root --> immediate[Immediate update]
+
+    deferred --> nur[NO-UNDO/REDO]
+    
+    immediate --> ur[UNDO/REDO]
+    immediate --> unr[UNDO/NO-REDO]
+```
+
 ## NoSQL
 
 La definición real de la sigla es _not just SQL_.
