@@ -271,6 +271,8 @@ graph TD
 
 ## Recovery
 
+Cuando hablamos de recovery, hablamos de la habilidad del DBMS de volver al estado consistente más reciente, después de haber sufrido una falla no catastrófica (que afecta la integridad física del nodo en el corre).
+
 ```mermaid
 graph TD
     root[Mecanismos de recovery] --> deferred[Deferred update]
@@ -281,6 +283,91 @@ graph TD
     immediate --> ur[UNDO/REDO]
     immediate --> unr[UNDO/NO-REDO]
 ```
+
+- Deferred update: El DBMS no impacta los cambios de manera física (en el storage no volatil) hasta después que la transacción commitea.
+    - NO-UNDO/REDO
+- Immediate update: El storage no-volatil **podría** ser actualizado por una transacción antes que esta sea commiteada.
+    - UNDO/REDO
+    - UNDO/NO-REDO
+
+### Notas sobre cada mecanismo de recoveryc
+**REDO**
+
+Solo después que una transacción llega al punto de commit, y el log es force-written, ahí se bajan a disco los cambios. Por eso no hace falta UNDO!
+
+
+Asumiendo que el log contiene un checkpoint, y two-phase locking estricto es usado para CC, que asegura schedules serializables y estrictos:
+```
+commited_txs = txs commiteadas desde el último checkpoint
+active_txs = txs activas
+from tail to head, pick entries (write_item, tx, X, V):
+    if tx in commited_txs:
+        WRITE(X,V)
+Cancel and resubmit active_txs - commited_txs
+```
+
+> Se lo puede hacer más eficiente leyendo el log de head a tail, y recordando que data items ya se escribieron. De esta forma solo se escribe el último valor commiteado en cada DI.
+
+**UNDO/REDO**
+
+Cuando una transacción T hace un write, este cambio **puede** ser escrito en disco antes que la T haya sido commiteada. 
+
+Asumiendo que el log contiene un checkpoint, y two-phase locking estricto es usado para CC, que asegura schedules serializables y estrictos:
+```
+commited_txs = txs commiteadas desde el último checkpoint
+active_txs = txs activas
+//In this order since more than one tx might have written the same value
+from head to tail, pick entries (write_item, tx, X, old, new):
+    if tx in active_txs:
+        WRITE(X,old)
+
+from tail to head, pick entries (write_item, tx, X, V):
+    if tx in commited_txs:
+        WRITE(X,V)
+```
+> Como en el caso de REDO, ambas etapas del recovery pueden ser optimizadas haciendolas en el order inverso, y acordandose que data items ya se actualizaron.
+
+> Todos los mecanismos de recovery deben ser idempotentes: The result of recovery from a system crash during recovery should be the same as the result of recovering when there is no crash during recovery!
+> In general, it is convenient to consider recovery in terms of the database disk pages (blocks). Typically a collection of in-memory buffers, called the DBMS cache, is kept under the control of the DBMS for the purpose of holding these buffers.
+
+Operaciones soportadas por el DBMS cache subsystem: 
+- fetch
+- flush
+- pin
+- unpin
+
+> Si los schedules ejecutados podrían sufrir de cascading rollback, hace falta escribir en el log `read_item`, ya que hay que poder detectar cuando una transacción leyo de una abortada. Por eso siempre suelen usarse protocolos que aseguran que los schedules ejecutados sean estrictos, o por lo menos cascadeless.
+
+La política que goberna el DBMS Cache manager puede ser caracterizada entre:
+- steal/no-steal: No steal quiere decir que una página que fue escrita por una transacción T no puede ser escrita a disco hasta que T commitee (para esto se usan los bit pin/unpin). Steal es llamado asi porque sirve para cuando el buffer está lleno, y una página aún no commiteada debe ser evicteada para dar espacio a otra.
+- force/no-force: Force quiere decir que antes que una transacción sea commiteada, todas las páginas actualizadas por esta deben ser escritas a disco.
+
+|          | Steal     | No-Steal |
+|----------|-----------|----------|
+| Force    | UNDO    |  |
+| No-Force | UNDO/REDO |    REDO      |
+
+```
+Checkpoint
+    suspend all transaction executions
+    Force-write all buffers with dirty=1 
+    Add checkpoint entry to WAL, and force-write log
+    Resume transactions
+```
+
+```
+Fuzzy checkpoint (quescient?)
+    suspend all transaction executions
+    Add begin_checkpoint entry to WAL, and force-write log
+    Resume transactions
+    Force-write all buffers with dirty=1 
+    Change current_checkpoint pointer to this one
+    Add end_checkpoint entry to WAL, and force-write log
+```
+
+### Isolation levels
+
+<img src="imgs/isolation-levels.png" width="500">
 
 ## NoSQL
 
