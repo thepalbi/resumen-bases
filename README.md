@@ -303,7 +303,7 @@ active_txs = txs activas
 from tail to head, pick entries (write_item, tx, X, V):
     if tx in commited_txs:
         WRITE(X,V)
-Cancel and resubmit active_txs - commited_txs
+Cancel and resubmit active_txs
 ```
 
 > Se lo puede hacer más eficiente leyendo el log de head a tail, y recordando que data items ya se escribieron. De esta forma solo se escribe el último valor commiteado en cada DI.
@@ -324,6 +324,7 @@ from head to tail, pick entries (write_item, tx, X, old, new):
 from tail to head, pick entries (write_item, tx, X, V):
     if tx in commited_txs:
         WRITE(X,V)
+Cancel and resubmit active_txs
 ```
 > Como en el caso de REDO, ambas etapas del recovery pueden ser optimizadas haciendolas en el order inverso, y acordandose que data items ya se actualizaron.
 

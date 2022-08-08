@@ -9,7 +9,36 @@ En un DBMS, llamamos aislamiento (isolation) a la propiedad que dos transaccione
 <img src="imgs/ejemplo-relaciones.png" width="500">
 
 - <span style="color:red">Te daba una query en sql y había que escribirla en ar, dar el árbol canónico, dar 2 planes de ejecución y decir creo que una optimización que se pueda hacer si se tienen estadísticas sobre los datos</span>
-- <span style="color:red">Para qué sirve el logging y explicar undo/redo</span>
+- <span style="color:green">Para qué sirve el logging y explicar undo/redo</span>
+
+Logging es un mecanismo que sirve para, al ocurrir una falla no catastrófica en el DBMS, poder recuperar el estado de la base de datos que maneja a uno consistente. Esto consiste en que las transacciones que son ejecutadas, aparte de afectar tanto la base de datos en disco como la parte en memoria de la misma (que se encuentra en el buffer, o cacheada), crean un registro en un archivo write-ahead por cada operación de escritura que realizan. De esta forma, y con diversos mecanismos, se puede recuperar el estado a uno consistente con respecto a qué transacciones fueron commiteadas y cuáles no.
+
+Undo/redo es uno de estos mecanismos, el cual aparte caracteriza de qué forma maneja los commit el cache manager. En este caso, se dice que es:
+- Steal: Permite que se bajen a disco escrituras en bloques, cuya transacción no fue commiteada. Esto permite que se reutilice espacio en el buffer en memoria principal.
+- No Force: Cuando una transacción se commitea, no hace falta que todas las modificaciones de la misma sean escritas en disca en el acto. Esto hace que si ocurren sucesivas modificaciones sobre un data item, ahorrar tráfico de IO.
+
+Estas dos características hace que durante el recovery, haya que tanto re-hace (REDO) operaciones que fueron commiteadas, pero no escritas en disco (por no-force); y des-hacer escrituras en disco de transacciones que no hayan commiteado (UNDO). Por eso, ante cada write, una transacción debe escribir en el log una entrada con la siguiente forma:
+```
+(write_item, transaction_id, data_item_id, value_before, value_after)
+```
+
+De esta forma, al ocurrir una falla (asumiendo que hubo un checkpoint previamente), se procede de la siguiente manera:
+```
+commited_txs = transacciones commiteadas desde el último checkpoint, es decir que se encuentre después del checkpoint una entrada `COMMIT tx_i`
+active_txs = transacciones activas desde el último checkpoint, es decir que estaban en el checkpoint como activas y no commitearon, o que empezaron y no commitearon
+
+// UNDO
+for (write_item, tx, X, before, after) leyendo desde adelante para atras:
+    if tx in active_txs:
+        write(X, before)
+
+for (write_item, tx, X, before, after) leyendo desde atras para adelante:
+    if tx in commited_txs:
+        write(X, after)
+
+cancelar y re-submittear tx in active_txs
+```
+
 - <span style="color:green">Qué es falsa sumarización y qué nivel de aislamiento se necesita en sql para evitarlas</span>
 
 <img src="imgs/falsa-sumarizacion-ejemplo.png" width="500">
@@ -47,7 +76,13 @@ Las bases de datos tienen otro conjunto de propiedades llamado BASE, el cual car
 
 <mark>TODO: Esta bien esto?</mark>
 
-- <span style="color:red">Por qué en NoSQL se necesita la consistencia eventual</span>
+- <span style="color:green">Por qué en NoSQL se necesita la consistencia eventual</span>
+
+Un caso de uso muy común de bases de datos NoSQL, es en web services de gran escala, los cuales comunmente son distribuidos. De esta forma, y al corresponder a un sistema compuesto por muchos nodos comunicados entre si por Internet (o algun tipo de red de computadoras), entra en juego el teorema CAP. El mismo dice que de las tres propiedades que enuncia, solo dos pueden ser válidas. Particion a tolerancia es un requisito obligatorio, ya que de otra forma si un nodo no fuera alcanzable (ya sea por una falla de red o en el mismo, lo cual ocurre muy a menudo a la escala en la que estos sistemas suelen usarse) el sistema se tornaría inutilizable. 
+De estas dos, por el teorema CAP, solo nos queda garantizar disponibilidad o consistencia. Como usualmente los servicios que consumen estas DBs sirven usuarios finales, los cuales esperan una respuesta en tiempo acorde, disponibiblidad es la propiedad más frecuentemente elegida. Ya que aparte, la solución consiste generalmente en relajar la definición de consistencia, dando paso a la consistencia eventual.
+
+La misma dice que el sistema no tiene que ser perfectamente consistente (que al ejecutar un READ, el valor respondido corresponda al del WRITE más reciente), sino que es admisible que en algún momento en el futuro el cambio se vea reflejado en todo nodo. Es decir, que **eventualmente** sea consistente.
+
 - <span style="color:green">Qué es open data y sus características principales</span>
 
 Se llama Open Data a la disponibilización de datos gubernamentales por parte del estado, a travez de internet, de forma de promover su análisis y re-utilización.
