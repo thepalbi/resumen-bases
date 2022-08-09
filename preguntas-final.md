@@ -124,7 +124,18 @@ Otro ejemplo que es una trabajo en curso es la Web Semántica, que trata de defi
 ## Agosto 2022
 
 - <span style="color:red">**¿Qué son las propiedades BASE? ¿Qué relación tienen con las ACID?**</span>
-- <span style="color:red">**¿Qué es una transacción? ¿Qué significa que una transacción lea de otra? Definir dirty read y dar ejemplo.**</span>
+- <span style="color:green">**¿Qué es una transacción? ¿Qué significa que una transacción lea de otra? Definir dirty read y dar ejemplo.**</span>
+
+Una transacción es un conjunto de operaciones sobre la DB, las cuales el DBMS se consideran como una unidad lógica de procesamiento, la cual debe ser ejectuada de forma atómica por el DBMS.
+
+Para mejorar la performance de la base de datos, estas suelen ser ejecutadas concurrentemente, es decir, de forma entrelazada. Por ejemplo, si una transacción T1 está compuesta de ${(READ_1(X), X \leftarrow X+1, WRITE_1(X), COMMIT_1)}$, y otra T2 de ${(READ_2(X), X \leftarrow X-2, WRITE_2(X), ..., ABORT_2)}$, un posible orden de ejecución sería:
+
+$READ_2(X), X \leftarrow X-2, WRITE_2(X), READ_1(X), X \leftarrow X+1, WRITE_1(X), ...$
+
+En este caso, dos cosas ocurrieron:
+- $T_1$ lee X, pero no cualquier X, sino un X que fue actualizado por la otra transacción $T_2$. Esto se lee como $T1$ lee de $T2$, ya que lee un valor producido por la segunda.
+- Notar que al final de su ejecución, la transacción $T_2$ aborta, dejando a la transacción $T_1$ con un valor que no debería haber existido, ya que abortar significa que la transacción va a ser revertida como si nunca hubiera ocurrido. Esta situación se llama **dirty read**, ya que $T_1$ leyó un valor que no era parte de un estado consistente de la db.
+
 - <span style="color:red">**¿Qué diferencia hay entre bases distribuídas de sitio primario y de copia primaria? Dar ventajas y desventajas de ambas.**</span>
 - <span style="color:red">**¿Qué es una historia y cuándo dos historias son equivalentes en conflicto?**</span>
 - <span style="color:red">**¿Qué es el proceso de normalización y para qué sirve? ¿Cómo está relacionado con la calidad de un diseño de bases de datos?**</span>
@@ -149,8 +160,32 @@ ii) Decir qué tipo de fragmentación se usó en el anterior punto. ¿Cómo obte
 ```
 
 ## Febrero 2020
-- <span style="color:red">**Definir superclave, clave primaria y dependencia funcional.**</span>
-- <span style="color:red">**¿Qué es gobierno de datos? Diferencias entre datos, información y conocimiento.**</span>
-- <span style="color:red">**¿Qué es Data Mining? Describir las distintas técnicas.**</span>
+- <span style="color:green">**Definir superclave, clave primaria y dependencia funcional.**</span>
+
+Sea una relación $R(A_1, A_2, ...., A_n)$ con n atributos:
+- Superclave: Es un conjunto $S \subseteq \{A_1, A_2, ..., A_n\}$ tal que si para dos tuplas $t_1$ y $t_2$, se cumple que $\forall s \in S, s(t_1) = s(t_2)$ entonces $t_1 = t_2$. Es decir, los atributos que forman la superclave identifican unívocamente una tupla, de ahí el nombre de clave.
+- Clave primaria: Una clave primaria es una superclave que es minimal, es decir que si se le quita uno de sus atribrutos deja de ser superclave, y que es elegida como la clave principal para identificar las tuplas de una relación.
+- Dependencia funcional: Es una propiedad semántica de una relación y del modelo en si. Se notan como $X \rightarrow Y$, con X,Y atributos o conjuntos de atributos de R. Quiere decir que los valores que tomas $Y$ en cada tupla de la relación dependen de los que tomen $X$. Por ejemplo, en una relación $Persona(dni, nombre, apellido, telefono)$, se cumple que $dni \rightarrow nombre,apellido,telefono$ ya que la presona es identificada unívocamente por el dni.
+
+- <span style="color:green">**¿Qué es gobierno de datos? Diferencias entre datos, información y conocimiento.**</span>
+
+El gobierno de datos consiste en el desarrollo de técnicas, procedimientos y arquitecturas para manejar adecuadamente datos de una organización, de forma de asegurar el nivel de calidad requerido. Notar que no es solo un tema de sistemas, sino organizacional.
+
+Un dato es la forma más en crudo de las observaciones que se toman sobre algun evento, u objeto del mundo real. También puede ser un conjunto de transacciones (no en el sentido de DBMS), sino de movimiento/intercambio de activos, los cuales no son entidades del mundo real. En si mismo, un dato en crudo no tiene significado o razón de ser.
+La información es un conjunto de datos procesados con significado y propósito.
+El conocimiento vendría a ser el "destialdo" de la información. Consiste en los aprendizajes obtenidos de procesar información, y adquirir resultadods útiles para tomar alguna acción.
+
+<img src="imgs/priamide-datos-info-cono.png" width="500">
+
+- <span style="color:green">**¿Qué es Data Mining? Describir las distintas técnicas.**</span>
+
+Data mining consiste en el proceso de extración de patrones o información interesante (no trivial) de grandes volumenes de datos. Las técnicas que se usan se dividen en dos grandes grupos:
+- Supervisadas, en los cuales se utilizan datos de entrenamiento anotados con la respuesta esperada. Estos actúan como un oráculo con el cual la técnica usa para guiar el aprendizaje de patrones.
+    - Redes neuronales
+    - Árboles de decisión
+    - Regresión lineal
+- No supervisada, en esta no se tienen datos anotados como entrada. El objetivo es poder encontrar la estructura oculta de datos no clasificados.
+    - Clustering
+
 - <span style="color:red">**¿Qué es la interoperabilidad de datos? Describir los dos enfoques que se mencionan en la bibliografía.**</span>
 

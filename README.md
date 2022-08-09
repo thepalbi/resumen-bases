@@ -345,9 +345,9 @@ La política que goberna el DBMS Cache manager puede ser caracterizada entre:
 - force/no-force: Force quiere decir que antes que una transacción sea commiteada, todas las páginas actualizadas por esta deben ser escritas a disco.
 
 |          | Steal     | No-Steal |
-|----------|-----------|----------|
-| Force    | UNDO    |  |
-| No-Force | UNDO/REDO |    REDO      |
+| -------- | --------- | -------- |
+| Force    | UNDO      |          |
+| No-Force | UNDO/REDO | REDO     |
 
 ```
 Checkpoint
