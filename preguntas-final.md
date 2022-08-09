@@ -1,4 +1,4 @@
-**Julio 2022**
+## Julio 2022
 
 - <span style="color:green">Qué parte del DBMS se encarga de garantizar aislamiento</span>
 
@@ -120,3 +120,37 @@ El estudio de ontologías trata de describir los conceptos y relaciones que son 
 Por ejemplo imaginemos que definimos una ontología sobre pizzas. Definimos un concepto o clase de **Pizza**, y otra **Pizza vegetariana** que es una Pizza también, pero no tiene ingredientes que correspondan a la clase **Carne**. Ahora si creamos una instancia de Pizza que no posee ingredientes carnivoros, mediante la ontología se puede inferir que esta es una Pizza vegetariana.
 
 Otro ejemplo que es una trabajo en curso es la Web Semántica, que trata de definir una ontología compartida por todas computadoras de la Internet para facilitar el intercambio de información.
+
+## Agosto 2022
+
+- <span style="color:red">**¿Qué son las propiedades BASE? ¿Qué relación tienen con las ACID?**</span>
+- <span style="color:red">**¿Qué es una transacción? ¿Qué significa que una transacción lea de otra? Definir dirty read y dar ejemplo.**</span>
+- <span style="color:red">**¿Qué diferencia hay entre bases distribuídas de sitio primario y de copia primaria? Dar ventajas y desventajas de ambas.**</span>
+- <span style="color:red">**¿Qué es una historia y cuándo dos historias son equivalentes en conflicto?**</span>
+- <span style="color:red">**¿Qué es el proceso de normalización y para qué sirve? ¿Cómo está relacionado con la calidad de un diseño de bases de datos?**</span>
+
+## Marzo 2020
+
+- <span style="color:red">**Qué es una base de datos distribuida. Describir el protocolo 3FN.**</span>
+- <span style="color:red">**Ejercicio optimización**</span>
+```
+Tenés 2 relaciones E = {idEstudiante, nombreEstudiante, idFacultad, fechaInscripción} y F = {idFacultad, nombreFacultad}. Los registros de E miden 30 B, y hay 10.000 de ellos. Los registros de F miden 20 B y hay 500 de ellos. Hay 3 nodos N1, N2 y N3. N1 tiene a E, N2 tiene a F, y N3 hace la query 'Devolver id de estudiante y nombre de la facultad de los estudiantes que se inscribieron después de 1980'.
+
+i) ¿Que agregarías a la BD para capturar la siguiente situación: 'un estudiante puede inscribirse a varias facultades, pero en fechas distintas'?
+ii) Escribir la query en AR y en CR
+iii) Describir una estrategia de resolución de la query, junto con cuantos bytes son transferidos. Reemplace por variables las cantidades desconocidas (con eso se refiere a que no sabés cuantos estudiantes se inscribieron después de 1980, y que tendrías que reemplazar dicha cantidad por una variable).
+```
+- <span style="color:red">**Ejercicio raro**</span>
+```
+7) Supongamos que hay 4 facultades f1, f2, f3 y f4; y 4 nodos correspondientes N1, N2, N3 y N4. Se quiere fragmentar la información de E y F del anterior punto, para que tanto la información de las facultades, como la de estudiantes esten solo en el nodo de su facultad correspondiente.
+
+i) Definir qué queries en AR hacen falta para definir la fragmentación, y definir un esquema de asignación para obtener lo requerido.
+ii) Decir qué tipo de fragmentación se usó en el anterior punto. ¿Cómo obtendría las relaciones originales luego de la fragmentación?
+```
+
+## Febrero 2020
+- <span style="color:red">**Definir superclave, clave primaria y dependencia funcional.**</span>
+- <span style="color:red">**¿Qué es gobierno de datos? Diferencias entre datos, información y conocimiento.**</span>
+- <span style="color:red">**¿Qué es Data Mining? Describir las distintas técnicas.**</span>
+- <span style="color:red">**¿Qué es la interoperabilidad de datos? Describir los dos enfoques que se mencionan en la bibliografía.**</span>
+

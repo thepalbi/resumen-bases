@@ -1,6 +1,7 @@
 ## Referencias
 - [Curso de dbs en CMU](https://15445.courses.cs.cmu.edu/fall2019/schedule.html)
 - [Temario](./temario.md)
+- [Preguntas examenes anteriors](./preguntas-final.md)
 
 ## Notas sobre temas que no pienso darle mucha bola
 
@@ -490,10 +491,16 @@ Una query es primero descompuesta en **query blocks** para que no haya queries a
 
 Luego es traducida de su forma de alto nivel (SQL) a un query tree expresado en un álgebra relacional extendida.
 
-#### SELECT - $\sigma_{A=v}(RELACION)$
+### Operadores y algoritmos
 
-Un select es básicamente una operación para seleccionar las tuplas que cumplen cierta condición.
+**Selección conjuntiva**
+- Se puede partir la conjunción en cascada, en orden de selectividad de mayor a menor (optimización a nivel de AR).
+- Si hay un índice en alguno de los atributos seleccionados, utilizarlo y después sobre las tuplas devueltas devolver las que validen la condición
+- Composite index si hay, y implica TODOS los atributos de la condición
+- Múltiples índices partiendo la condición, y hacer interesección de las tuplas resueltas
 
-> TODO: Ver si tiene sentido hacer resumend de las operaciones y sus algos. Quizás en alguna tabla
+**Selección disyuntiva**
+No queda otra que evaluar la condición entera. Generalmente linear scan, y alguna optimización a nivel lógico.
+
 
 ## [Distribuidas](./distribuidas.md)
