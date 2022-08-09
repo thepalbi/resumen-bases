@@ -137,13 +137,20 @@ En este caso, dos cosas ocurrieron:
 - Notar que al final de su ejecución, la transacción $T_2$ aborta, dejando a la transacción $T_1$ con un valor que no debería haber existido, ya que abortar significa que la transacción va a ser revertida como si nunca hubiera ocurrido. Esta situación se llama **dirty read**, ya que $T_1$ leyó un valor que no era parte de un estado consistente de la db.
 
 - <span style="color:red">**¿Qué diferencia hay entre bases distribuídas de sitio primario y de copia primaria? Dar ventajas y desventajas de ambas.**</span>
-- <span style="color:red">**¿Qué es una historia y cuándo dos historias son equivalentes en conflicto?**</span>
+- <span style="color:green">**¿Qué es una historia y cuándo dos historias son equivalentes en conflicto?**</span>
+
+Una historia o schedule es una forma de ordernar las operaciones de un conjunto de transacciones, de forma de poder ejectuarlas concurrentemente. Formalmente, es un orden parcial o total, definido sobre las operaciones de un conjunto de transacciones $T_i$, con $i \in \{1, ..., n\}$. Este orden define como es la secuencia de operaciones de una transacción que son ejecutadas. Por ejemplo si $read_1(X) < write_2(Y)$ eso quiere decir que la lectura se ejecuta antes de la escritura. En cambio, si es un menor o igual, esto índica que pueden ser ejectuadas concurrentemente.
+
+Ahora, tenemos múltiples historias que pueden ser definidas para un mismo conjunto de transacciones. Una forma de ver si son equivalentes (llevan la base de datos al mismo estado final) es mediante el concepto de equivalencia en conflicto. Primerdo, decimos que dos operaciones estan enconflico cuando las dos pertencen a transacciones diferentes, actual sobre el mismo data item, y al menos una de ellas es un write. Ahora, dos historias $s_1$ y $s_2$ son equivalente en conflicto, si cada par de operaciones en conflicto tienen el mismo orden relativo en ambas historias.
+
+<img src="imgs/conflicto-equivalencia-de-historias.png" width="700">
+
 - <span style="color:red">**¿Qué es el proceso de normalización y para qué sirve? ¿Cómo está relacionado con la calidad de un diseño de bases de datos?**</span>
 
 ## Marzo 2020
 
 - <span style="color:red">**Qué es una base de datos distribuida. Describir el protocolo 3FN.**</span>
-- <span style="color:red">**Ejercicio optimización**</span>
+- <span style="color:green">**Ejercicio optimización**</span>
 ```
 Tenés 2 relaciones E = {idEstudiante, nombreEstudiante, idFacultad, fechaInscripción} y F = {idFacultad, nombreFacultad}. Los registros de E miden 30 B, y hay 10.000 de ellos. Los registros de F miden 20 B y hay 500 de ellos. Hay 3 nodos N1, N2 y N3. N1 tiene a E, N2 tiene a F, y N3 hace la query 'Devolver id de estudiante y nombre de la facultad de los estudiantes que se inscribieron después de 1980'.
 
@@ -151,6 +158,11 @@ i) ¿Que agregarías a la BD para capturar la siguiente situación: 'un estudian
 ii) Escribir la query en AR y en CR
 iii) Describir una estrategia de resolución de la query, junto con cuantos bytes son transferidos. Reemplace por variables las cantidades desconocidas (con eso se refiere a que no sabés cuantos estudiantes se inscribieron después de 1980, y que tendrías que reemplazar dicha cantidad por una variable).
 ```
+
+<img src="imgs/ejraro-pt-1.png" width="500">
+
+<img src="imgs/ejraro-pt-2.png" width="500">
+
 - <span style="color:red">**Ejercicio raro**</span>
 ```
 7) Supongamos que hay 4 facultades f1, f2, f3 y f4; y 4 nodos correspondientes N1, N2, N3 y N4. Se quiere fragmentar la información de E y F del anterior punto, para que tanto la información de las facultades, como la de estudiantes esten solo en el nodo de su facultad correspondiente.
