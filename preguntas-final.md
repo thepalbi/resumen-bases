@@ -123,7 +123,14 @@ Otro ejemplo que es una trabajo en curso es la Web Semántica, que trata de defi
 
 ## Agosto 2022
 
-- <span style="color:red">**¿Qué son las propiedades BASE? ¿Qué relación tienen con las ACID?**</span>
+- <span style="color:green">**¿Qué son las propiedades BASE? ¿Qué relación tienen con las ACID?**</span>
+Un conjunto de propiedades con las cuales se pueden caracterizar la interacción de un usuario con una ddb. 
+- basic availability
+- soft state
+- eventual consistency
+
+ACID son propiedades que puede garantizar una DBMS relacional típica, la cual esta compuesta por un solo nodo. Estas sos más "fuertes" que lo que garantiza BASE, a pesar de ser pensadas para un sistema diferente. Por eso, base toma algunas de las propiedades de ACID (por ejemplo la consistencia), y las relaja para volverlas garantizables considerando limitaciones de las ddb, y límites teóricos como lo es el teorema CAP.
+
 - <span style="color:green">**¿Qué es una transacción? ¿Qué significa que una transacción lea de otra? Definir dirty read y dar ejemplo.**</span>
 
 Una transacción es un conjunto de operaciones sobre la DB, las cuales el DBMS se consideran como una unidad lógica de procesamiento, la cual debe ser ejectuada de forma atómica por el DBMS.
@@ -136,7 +143,14 @@ En este caso, dos cosas ocurrieron:
 - $T_1$ lee X, pero no cualquier X, sino un X que fue actualizado por la otra transacción $T_2$. Esto se lee como $T1$ lee de $T2$, ya que lee un valor producido por la segunda.
 - Notar que al final de su ejecución, la transacción $T_2$ aborta, dejando a la transacción $T_1$ con un valor que no debería haber existido, ya que abortar significa que la transacción va a ser revertida como si nunca hubiera ocurrido. Esta situación se llama **dirty read**, ya que $T_1$ leyó un valor que no era parte de un estado consistente de la db.
 
-- <span style="color:red">**¿Qué diferencia hay entre bases distribuídas de sitio primario y de copia primaria? Dar ventajas y desventajas de ambas.**</span>
+- <span style="color:green">**¿Qué diferencia hay entre bases distribuídas que usa copia distinguida de sitio primario y de copia primaria? Dar ventajas y desventajas de ambas.**</span>
+
+Clasificar una base de datos distribuida entre sitio primario, o copia primaria, son dos sabores del mecanismo de control de concurrencia que la misma utiliza, llamado copia distinguida. El mismo especifica que "alguien" realiza el control de acceso sobre un data item, es decir conceder o no un write_lock, o un read_lock.
+
+En el caso de sitio primario, un nodo de la ddb es designado como sitio primario, y este maneja el control sobre los locks de todos los data item. De este modo, todo el que quiera poder leer / escribir cualquier data item, debe pedirle acceso a un único nodo. Esto hace que distribuir la db sea de fácil implementación, ya que el manejo de concurrencia sigue siendo centralizado. Por otro lado, se torna un cuello de botella ya que un úncio nodo debe procesar los pedidos de todos los otros (aparte de él mismo); y además es un punto úncio de fallo, de forma que si el "sitio primario" deja de funcionar, o sufre una desconexión de la red, ningún otro nodo puede solicitar locks.
+
+El otro enfoque, copia primaria, distribuye esta resonsabilidad. Para cada data item, un único nodo es designado como el responable de manejar los locks de este, pero no necesariamnete el mismo. Por ejemplo para el registro `X`, el nodo `A` puede ser la copia primaria, mientras que para `Y` sea `B`. De esta forma ya no hay un único punto de falla, y deja de ser un cuello de botella porque la responsabilidad está distribuida. A pesar de esto, la implementación es mucho más compleja.
+
 - <span style="color:green">**¿Qué es una historia y cuándo dos historias son equivalentes en conflicto?**</span>
 
 Una historia o schedule es una forma de ordernar las operaciones de un conjunto de transacciones, de forma de poder ejectuarlas concurrentemente. Formalmente, es un orden parcial o total, definido sobre las operaciones de un conjunto de transacciones $T_i$, con $i \in \{1, ..., n\}$. Este orden define como es la secuencia de operaciones de una transacción que son ejecutadas. Por ejemplo si $read_1(X) < write_2(Y)$ eso quiere decir que la lectura se ejecuta antes de la escritura. En cambio, si es un menor o igual, esto índica que pueden ser ejectuadas concurrentemente.
@@ -145,11 +159,9 @@ Ahora, tenemos múltiples historias que pueden ser definidas para un mismo conju
 
 <img src="imgs/conflicto-equivalencia-de-historias.png" width="700">
 
-- <span style="color:red">**¿Qué es el proceso de normalización y para qué sirve? ¿Cómo está relacionado con la calidad de un diseño de bases de datos?**</span>
-
 ## Marzo 2020
 
-- <span style="color:red">**Qué es una base de datos distribuida. Describir el protocolo 3FN.**</span>
+- <span style="color:red">**Qué es una base de datos distribuida. Describir el protocolo 3PC.**</span>
 - <span style="color:green">**Ejercicio optimización**</span>
 ```
 Tenés 2 relaciones E = {idEstudiante, nombreEstudiante, idFacultad, fechaInscripción} y F = {idFacultad, nombreFacultad}. Los registros de E miden 30 B, y hay 10.000 de ellos. Los registros de F miden 20 B y hay 500 de ellos. Hay 3 nodos N1, N2 y N3. N1 tiene a E, N2 tiene a F, y N3 hace la query 'Devolver id de estudiante y nombre de la facultad de los estudiantes que se inscribieron después de 1980'.
@@ -162,14 +174,6 @@ iii) Describir una estrategia de resolución de la query, junto con cuantos byte
 <img src="imgs/ejraro-pt-1.png" width="500">
 
 <img src="imgs/ejraro-pt-2.png" width="500">
-
-- <span style="color:red">**Ejercicio raro**</span>
-```
-7) Supongamos que hay 4 facultades f1, f2, f3 y f4; y 4 nodos correspondientes N1, N2, N3 y N4. Se quiere fragmentar la información de E y F del anterior punto, para que tanto la información de las facultades, como la de estudiantes esten solo en el nodo de su facultad correspondiente.
-
-i) Definir qué queries en AR hacen falta para definir la fragmentación, y definir un esquema de asignación para obtener lo requerido.
-ii) Decir qué tipo de fragmentación se usó en el anterior punto. ¿Cómo obtendría las relaciones originales luego de la fragmentación?
-```
 
 ## Febrero 2020
 - <span style="color:green">**Definir superclave, clave primaria y dependencia funcional.**</span>
@@ -199,5 +203,115 @@ Data mining consiste en el proceso de extración de patrones o información inte
 - No supervisada, en esta no se tienen datos anotados como entrada. El objetivo es poder encontrar la estructura oculta de datos no clasificados.
     - Clustering
 
-- <span style="color:red">**¿Qué es la interoperabilidad de datos? Describir los dos enfoques que se mencionan en la bibliografía.**</span>
 
+## Noviembre 2019
+
+- <span style="color:green">**Definir transacciones y dar y explicar las propiedades ACID.**</span>
+transacción es un conjunto de consultas que representan unidad básica de ejecución y atomicas. atomicity, consisten preservation, isolation y durability
+
+- <span style="color:green">**Definir clave candidata. Definir clave primaria. Cuando un esquema está en 2FN?**</span>
+conjunto de atributos que identifican univocamnete una tupla. que no haya un atributo que dependa de parte de la pk.
+<mark>TODO: Revisar 2fn</mark>
+
+- <span style="color:green">**Definir dependencia funcional. ¿Para qué sirve que la normalización? ¿Cómo esta relacionado con la calidad de un diseño de bases de datos? ¿Qué problemas puede presentar una base desnormalizada? Ejemplifique**</span>
+df propiedad semantica que los valores que toma conj. de atributos depende de otro conjunto. para caracterizar un modelo relacional en cuando a greenundancia, y minimizacions de anomalias. El proceso para llevarlo a una forma mayor en la que esta, separando relaciones de forma que mantengan la infroacion, y siguen valiendo las dfs. Se hace basado en la PK y el conjunto de dfs.
+
+<mark>TODO: Revisar definicion normalizacion</mark>
+
+problemas: greenundancia de infromacion, y anomalias:
+- insercion: insertar un empleado y tener que agregar el nombre del dto donde trabaja, y tiene que ser consistente con el resto
+- actualizacion: actualizar nombre depeto
+- eliminacion: borrar ultimo empleado de un dto y perder toda la info de ese dto
+
+- <span style="color:green">**Dada la siguiente relación (idEstudiante, nombreEstudiante, nroCurso, idProfesor). En base a su conocimiento del dominio, detalle cuales son las dependencias funcionales en ese esquema. ¿Está en 3FN? Justifique. En caso de no estarlo dar una descomposición que sea 3FN.**</span>
+
+dfs:
+1. idEstudiante -> nombreEstudiante, nroCurso
+2. nroCusto -> idProfesor
+
+no esta en 3fn, ya que existe un df transitiva entre un atributo no clave (idProfesor) y otro si (idEstudainte)
+Descomposicion:
+```
+Estudiante(idEstudiante, nombreEstudiante, nroCurso)
+DictadaPor(nroCurso, idProfesor)
+```
+
+- <span style="color:green">**Defina bases de datos distribuida. Qué nuevos niveles de transparencia aparecen junto a estas bases?**</span>
+base de datos que esta compuesto por multiples nodos, comunicados entre si a travez de una green de computadoras. transparencia total? que el usuario interactua con la misma como si fuera un úncio sistemas, más alla que este compuesto por multiples nodos.
+
+<mark>TODO: niveles de transparencia?</mark>
+
+- <span style="color:green">**No me acuerdo exactamente el enunciado, pero era asi: Tenias dos tablas: Estudiantes E: (idEstudiante, nombreEstudiante, idFacultad, fechaNac), Facultad F: (idFacultad, nombreFacultad, region). Un estudiante va a 1 y solo 1 facultad. La tabla Estudiantes tiene 10000 registros de 30 bytes cada uno. La tabla universidad tiene 100 regitros de 20 bytes cada uno. Suponga una base de datos distribuida de 3 nodos N1, N2 y N3 donde N1 tiene la tabla estudiantes, N2 tiene la tabla universidades y N3 no tiene nada.**</span>
+    - <span style="color:green">**Expresar en álgebra relacional la consulta: “devolver id de estudiante y nombre de la facultad para los estudiantes que hayan nacido despues de 1980”**</span>
+    - <span style="color:green">**Dar dos estrategias de resolución de esta query, indicando cuantos bytes se transfieren por la green entre las maquinas. Por ejemplo “N1 y N2 mandan todo a N3”**</span>
+    Aca las dos estrategias cambia donde se reaiza el join, si:
+        - n2 le pasa la data a n3, se hace el join ahi y se pasa la data joineada
+        - n3 le pasa la data a n2, y se pasa la data joineada a n1
+        - n3 y n2 le pasan la data a n1, y ahi se realiza el join
+    - <span style="color:green">**Esta no me la acuerdo mucho pero era algo como “de forma general, cual es la estrategia óptima?”**</span>
+        - dependeniendo de lo de arriba nomas, ya que para una ddb lo mas costoso es el trafico de green, el resto es de ordenes de magnitud menor
+
+- <span style="color:green">**(Creo que este era exactamente el enunciado, con un 90% de seguridad): Se tienen 4 servidores N1, N2, N3 y N4, y 4 regiones reg1, reg2, reg3, reg4 tal que cada servidor Ni está en la región regi.**</span>
+    - <span style="color:green">**Indicar como sería la query en algebra relacional que fragmentaría a la tabla Facultades del insiso anterior para que cada facultad vaya al server de su región (todas las facultades pertenecen a una y solo una de esas 4 regiones) y la query que fragmente a la tabla Estudiantes por la region a la que pertenece su facultad.**</span>
+    Para un nodo_i, ubicado en la region_i
+
+    $\sigma_{region=region_i}(Facultad)$
+
+    $\pi_{idEstudiante,nombreEstudiante,idFacultad,fechaNac,region}(\sigma_{region=region_i}(Facultad \Join Estudiante))$
+
+    Notar que el join de arriba es un natural join, por lo cual se hará por $idFacultad$
+
+    - <span style="color:green">**Qué tipo de fragmentación utilizó?**</span>
+
+    Horizontal, ya que se fragmentaron (repartieron) las tuplas de las relaciones F y E entre los nodos. También es llamado sharding.
+    - <span style="color:green">**Indicar en algebra relacional como sería la query que reconstruya las tablas originales**</span>
+
+    $\cup_{i \in \{1,2,3,4\} (Facultad_i)}$
+    $\cup_{i \in \{1,2,3,4\} (Estudiante_i)}$
+
+    Asumiento que $Relacion_i$ es el fragmento de la relacion $Relacion$ en el i-esimo nodo. El operador es union.
+- <span style="color:green">**Dar 2 heuristicas que use el optimizador de consultas. Ejemplifique.**</span>
+    - bajar los SELECT lo más cerca posible de cada relacion
+    - Un select conjuntivo se puede partir en un pipeline, y de esta forma bajarlos a donde corresponda
+    - bajar el project lo más cerca de las relaciones, y si pasa por un join en el medio agregar el atributo joineado
+
+## Noviembre 2019
+- <span style="color:red">**¿Qué es fragmentación mixta? Dar un ejemplo, con una query en álgebra relacional para reconstruir las tablas originales**</span>
+
+- <span style="color:red">**Explicar bases NoSQL por documentos, explicando el concepto de documento. Mostrar cómo sería una base por documentos para el ejercicio anterior (no sé si había que hacer el DID, poner los jsons o ambos).**</span>
+```
+Tenías tres relaciones y había que dar según conocimiento del dominio las dependencias funcionales y decir en qué FN estaba (idMascota, nombreMascota, nombreDuenio), (idMascota, idDiagnostico, fecha), (idDiagnostico, descripcion, medicamento). (No había una única respuesta).
+```
+- <span style="color:red">**¿Cuáles son las dos formas de interrelación/interoperabilidad de datos? (creo que era integración e intercambio).**</span>
+<mark>TODO: respondeme</mark>
+
+- <span style="color:red">**Describir el protocolo 3PC.**</span>
+
+[Muy buena explicación de 3pc](https://courses.cs.vt.edu/~cs5204/fall00/distributedDBMS/sreenu/3pc.html#fail)
+
+## Popurri
+
+<img src="imgs/independencias.png" width="500">
+
+- <span style="color:green">**Explicar independencia lógica**</span>
+
+La independencia lógica es la capacidad de cambiars el esquema conceptual, si afectar los esquemas externos. De esta manera, uno puede cambiar la el modelo lógico que se utiliza en la base de datos, si after la forma en que los usuarios la consumen, ya qu estos dos estan disociados, y mantienen un mapeo que lleva a cabo al traducción entre uno y otro.
+
+- <span style="color:green">**Explicar independencia física**</span>
+
+La independencia lógica es la capacidad de poder cambiar el esquema interno (físico, acoplados al motor del DBMS) sin afectar el esquma interno. Como hay un componente encarado de realizar el mapping entre estos (por ejemplo, ya que se expresan en un lenguaje común como SQL, interpretado por múltiples DBMS). Algunos ejemplos de cambios de esquema interno son cambios en la configuración del engine, agregado de índices, etc.
+
+- <span style="color:green">**Diferencia entre administrador de datos y DBA. Relacionar con concepto de independencia física y transparencia.**</span>
+
+Un DBA es un especialista en un motor de DB, por ejemplo Oracle, MySQL, etc. Su expertise se encuentra en el mantenimiento de la misma, y el manejo de los lenguajes de consulta. Por otro lado, un administrador de datos se encargar de los datos de la organización en si, dónde se producen, y su manejo interno.
+
+- <span style="color:green">**Que es dataware housing?**</span>
+
+Un data warehous es una colección de datos armada para guiar la toma de decisiones de negocio de una organización. Proveen acceso a queries complejas, descubrimiento de conocimiento y soportes a demandas de alta performance. Algunas características que suelen proveer son: integrado, no volatil, time variant (cada dato corresponde a un momento en el timepo)
+
+La inserción de datos a un data warehouse suele hacerse mediante un proceso conocido como ETL: Extract transform load
+
+- <span style="color:green">**Explicar bases NoSQL por documentos, explicando el concepto de documento. Qué es un DID? Dar un ejemplo de un sistema de base de datos por documentos.**</span>
+
+Una documento es un tipo de datos semi-estructurado. El mismo suele almacenar información acerca de un objecto en particular, y su metadata. Esta último porción suele tener algun tipo de estructura común conocida por el dbms que permite optimizar quieries por medo de índices. Los documentos suelen ser expresados como una colección de pares clave valor, que puede tomar desde tipos de datos atómcios, hasta más complejos como otros documentos. Algunos formatos muy comunes que son documetnos son json y xml. Un base de datos NoSQL es un tipo de bases de datos no relacion, que almacena documentos. 
+DID: Diagrama de interrelación de documentos. Incrustar o referenciar.

@@ -389,7 +389,7 @@ La definición real de la sigla es _not just SQL_.
 
 Al surgir este tipo de bases de datos, también surge el concepto de propiedades **BASE**, las cuales difieren de **ACID**. Estás son:
 - Basic availability (BA)
-- Soft-State (S)
+- Soft-State (S): La consistencia de los datos es una responsabilidad de los programadores. La DB no provee un sistema que permita evaluar integridad del modelo en si (por ejemplo foreign keys).
 - Eventual Consistency (E)
 
 > TODO: Investigar BASE vs. ACID
@@ -409,7 +409,7 @@ Las propiedades de BASE y ACID son propiedades que aplican al concepto de intera
 - NoSQL
     - Key Value Stores: Cada item almacenado es un par clave valor. El valor puede ser de tipo texto plano, documentos JSON/XML, hasta blobs.
         - Redis
-    - Document stores: También respetan un esquema clave valor, pero los valores están restringidos a ser documentos de texto con cierta estructura (JSON/XML). Siguen siendo schemaless, pero como poseen metadata sobre los documentos almacenados, permiten realizar indexaciones sobre algunos de los campos.
+    - Document stores: También respetan un esquema clave valor, pero los valores están restringidos a ser documentos de texto semi-estructurados (JSON/XML). Siguen siendo schemaless, pero como poseen metadata sobre los documentos almacenados, permiten realizar indexaciones sobre algunos de los campos.
         - MongoDB
     - Column Family DBs: Son bases de datos que consisten una columnas de datos relacionados. Un par clave valor puede ser pensado como una serie de columnas que compartes una clave en particular. Ofrecen naturalmente partición vertical (en vez de particionar los datos por conjuntos de items, se particionan por conjuntos de atributos). Los valores podrían ser vistos como una analogía a las _vistas_ de las bases de datos relacionales.
         - Google BigTable

@@ -30,6 +30,29 @@ Para asegurar ACID, se utilizan ténicas como [2-phase-commit (2PC)](https://www
 
 <img src="imgs/2pc.png" width="500">
 
+Arquitectónicamente, el encargado de coordinar transacciones en una ddb no es el cliente, sino un coordinador de transacciones (transaction coordinator).
+
+```mermaid
+sequenceDiagram
+title: two phase commit (2pc)
+    cliente ->> cordinador: commit
+
+    cordinador ->> sitioA: prepare
+    cordinador ->> sitioB: prepare
+    note right of cordinador: equivale a preguntar podes commitear?
+    sitioA ->> cordinador: ok
+    sitioB ->> cordinador: ok
+
+    note right of cordinador: momento clave. El coordinador toma la decisión
+    note right of cordinador: si el coordinador falla, 2pc no es fault-tolerant
+    cordinador ->> sitioA: commit
+    cordinador ->> sitioB: commit
+    sitioA ->> cordinador: ok
+    sitioB ->> cordinador: ok
+
+    cordinador ->> cliente: ok            
+```
+
 **Fragmentación y replicación**
 
 Fragmentación: Repartir los datos entre diferentes servidores (+ write)
