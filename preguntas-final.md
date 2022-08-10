@@ -210,13 +210,11 @@ Data mining consiste en el proceso de extración de patrones o información inte
 transacción es un conjunto de consultas que representan unidad básica de ejecución y atomicas. atomicity, consisten preservation, isolation y durability
 
 - <span style="color:green">**Definir clave candidata. Definir clave primaria. Cuando un esquema está en 2FN?**</span>
-conjunto de atributos que identifican univocamnete una tupla. que no haya un atributo que dependa de parte de la pk.
-<mark>TODO: Revisar 2fn</mark>
+conjunto de atributos que identifican univocamnete una tupla. que no haya un atributo que dependa de parte de la pk. debe ser fully dependant de la pk
 
 - <span style="color:green">**Definir dependencia funcional. ¿Para qué sirve que la normalización? ¿Cómo esta relacionado con la calidad de un diseño de bases de datos? ¿Qué problemas puede presentar una base desnormalizada? Ejemplifique**</span>
-df propiedad semantica que los valores que toma conj. de atributos depende de otro conjunto. para caracterizar un modelo relacional en cuando a greenundancia, y minimizacions de anomalias. El proceso para llevarlo a una forma mayor en la que esta, separando relaciones de forma que mantengan la infroacion, y siguen valiendo las dfs. Se hace basado en la PK y el conjunto de dfs.
 
-<mark>TODO: Revisar definicion normalizacion</mark>
+df propiedad semantica que los valores que toma conj. de atributos depende de otro conjunto. normalización es el proceso para llevar el modelo a una forma mayor en la que esta, separando relaciones de forma que mantengan la infroacion, y siguen valiendo las dfs. Se hace basado en la PK y el conjunto de dfs.
 
 problemas: greenundancia de infromacion, y anomalias:
 - insercion: insertar un empleado y tener que agregar el nombre del dto donde trabaja, y tiene que ser consistente con el resto
@@ -237,9 +235,16 @@ DictadaPor(nroCurso, idProfesor)
 ```
 
 - <span style="color:green">**Defina bases de datos distribuida. Qué nuevos niveles de transparencia aparecen junto a estas bases?**</span>
+
 base de datos que esta compuesto por multiples nodos, comunicados entre si a travez de una green de computadoras. transparencia total? que el usuario interactua con la misma como si fuera un úncio sistemas, más alla que este compuesto por multiples nodos.
 
-<mark>TODO: niveles de transparencia?</mark>
+transparencia:
+- organización de los datos
+    - ubicación
+    - nombres
+- fragmentación
+- replicación
+- ejecución
 
 - <span style="color:green">**No me acuerdo exactamente el enunciado, pero era asi: Tenias dos tablas: Estudiantes E: (idEstudiante, nombreEstudiante, idFacultad, fechaNac), Facultad F: (idFacultad, nombreFacultad, region). Un estudiante va a 1 y solo 1 facultad. La tabla Estudiantes tiene 10000 registros de 30 bytes cada uno. La tabla universidad tiene 100 regitros de 20 bytes cada uno. Suponga una base de datos distribuida de 3 nodos N1, N2 y N3 donde N1 tiene la tabla estudiantes, N2 tiene la tabla universidades y N3 no tiene nada.**</span>
     - <span style="color:green">**Expresar en álgebra relacional la consulta: “devolver id de estudiante y nombre de la facultad para los estudiantes que hayan nacido despues de 1980”**</span>
@@ -278,10 +283,15 @@ base de datos que esta compuesto por multiples nodos, comunicados entre si a tra
 ## Noviembre 2019
 - <span style="color:red">**¿Qué es fragmentación mixta? Dar un ejemplo, con una query en álgebra relacional para reconstruir las tablas originales**</span>
 
-- <span style="color:red">**Explicar bases NoSQL por documentos, explicando el concepto de documento. Mostrar cómo sería una base por documentos para el ejercicio anterior (no sé si había que hacer el DID, poner los jsons o ambos).**</span>
+Ver reconstrucción [aca](./distribuidas.md#fragmentacion-detalles)
+
+- <span style="color:green">**Explicar bases NoSQL por documentos, explicando el concepto de documento. Mostrar cómo sería una base por documentos para el ejercicio anterior (no sé si había que hacer el DID, poner los jsons o ambos).**</span>
 ```
 Tenías tres relaciones y había que dar según conocimiento del dominio las dependencias funcionales y decir en qué FN estaba (idMascota, nombreMascota, nombreDuenio), (idMascota, idDiagnostico, fecha), (idDiagnostico, descripcion, medicamento). (No había una única respuesta).
 ```
+
+<img src="imgs/did-mascotas.png" width="500">
+
 - <span style="color:red">**¿Cuáles son las dos formas de interrelación/interoperabilidad de datos? (creo que era integración e intercambio).**</span>
 <mark>TODO: respondeme</mark>
 

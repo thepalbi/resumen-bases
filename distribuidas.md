@@ -65,6 +65,29 @@ La primera, horizontal, también es conocida como sharding. Esta permite facilme
 
 <img src="imgs/sharding-1.png" width="500">
 
+### Fragmentacion detalles
+
+Para reconstruir la relación de cada tipo de fragmentación correspondiente, se usa:
+- Horizontal: Union de cada fragmento, operador de AR es $\cup$
+- Vertical: `FULL OUTER JOIN` de cada fragmento, operador de AR es $\cup$
+
+<img src="imgs/full-outer-join.png" width="500">
+
+- Mixta: Combinación de los dos de arriba, en el orden correcto.
+
+Por ejemplo en `E(idEstudiante, idFacultad, nombre, apellido, telefono)` con:
+- sharding por idFacultad
+- vertical en nombre,apellido por un lado, telefono por el otro
+
+fragmentos
+$DatosEstudiante_i = \pi_{idEstudiante, idFacultad, nombre, apellido}(\sigma_{idFacultad=Facultad_i})$
+
+$TelefonoEstudiante_i = \pi_{idEstudiante, idFacultad, telefono}(\sigma_{idFacultad=Facultad_i})$
+
+reconstrucción
+
+$\cup_{i \in Facultad.idFacultad}(DatosEstudiante_i) \Join \cup_{i \in Facultad.idFacultad}(TelefonoEstudiante_i)$
+
 **Procesamiento distribuido**
 
 ```mermaid
